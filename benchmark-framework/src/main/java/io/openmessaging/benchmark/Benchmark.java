@@ -61,6 +61,10 @@ public class Benchmark {
                 "--workers-file" }, description = "Path to a YAML file containing the list of workers addresses")
         public File workersFile;
 
+        @Parameter(names = { "-s",
+                "--stop" }, description = "Stop all workloads")
+        public boolean stop;
+
         @Parameter(description = "Workloads", required = true)
         public List<String> workloads;
     }
@@ -123,6 +127,14 @@ public class Benchmark {
             worker = new LocalWorker();
         }
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                worker.stopAll();
+            } catch (IOException e) {
+                log.warn("Failed to stop all benchmark workers on shutting down", e);
+            }
+        }, "benchmark-shutdown-thread"));
+
         workloads.forEach((workloadName, workload) -> {
             arguments.drivers.forEach(driverConfig -> {
                 try {
@@ -134,6 +146,10 @@ public class Benchmark {
 
                     // Stop any left over workload
                     worker.stopAll();
+
+                    if (arguments.stop) {
+                        return;
+                    }
 
                     worker.initializeDriver(new File(driverConfig));
 

@@ -351,7 +351,7 @@ public class WorkloadGenerator implements AutoCloseable {
         }
     }
 
-    private TestResult printAndCollectStats(long testDurations, TimeUnit unit) throws IOException {
+    private TestResult printAndCollectStats(long testDurations, TimeUnit unit) {
         long startTime = System.nanoTime();
 
         // Print report stats
@@ -370,7 +370,14 @@ public class WorkloadGenerator implements AutoCloseable {
                 break;
             }
 
-            PeriodStats stats = worker.getPeriodStats();
+            PeriodStats stats;
+            try {
+                stats = worker.getPeriodStats();
+            } catch (IOException ioe) {
+                log.warn("Failed to get period stats from worker, retrying in 10 seconds ...", ioe);
+                oldTime = System.nanoTime();
+                continue;
+            }
 
             long now = System.nanoTime();
             double elapsed = (now - oldTime) / 1e9;
@@ -417,7 +424,14 @@ public class WorkloadGenerator implements AutoCloseable {
             result.endToEndLatencyMax.add(microsToMillis(stats.endToEndLatency.getMaxValue()));
 
             if (now >= testEndTime && !needToWaitForBacklogDraining) {
-                CumulativeLatencies agg = worker.getCumulativeLatencies();
+                CumulativeLatencies agg;
+                try {
+                    agg = worker.getCumulativeLatencies();
+                } catch (IOException ioe) {
+                    log.warn("Failed to get cumulative latencies from worker, retrying in 10 seconds ...", ioe);
+                    oldTime = now;
+                    continue;
+                }
                 log.info(
                         "----- Aggregated Pub Latency (ms) avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {}",
                         dec.format(agg.publishLatency.getMean() / 1000.0),
