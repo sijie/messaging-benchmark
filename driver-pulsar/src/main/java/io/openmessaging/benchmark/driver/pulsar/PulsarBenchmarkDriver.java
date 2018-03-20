@@ -32,6 +32,7 @@ import org.apache.pulsar.client.admin.PulsarAdminException.ConflictException;
 import org.apache.pulsar.client.api.ClientConfiguration;
 import org.apache.pulsar.client.api.ConsumerConfiguration;
 import org.apache.pulsar.client.api.ProducerConfiguration;
+import org.apache.pulsar.client.api.ProducerConfiguration.MessageRoutingMode;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.SubscriptionType;
 import org.apache.pulsar.common.policies.data.BacklogQuota;
@@ -89,6 +90,7 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
                 TimeUnit.MILLISECONDS);
         producerConfiguration.setBlockIfQueueFull(config.producer.blockIfQueueFull);
         producerConfiguration.setMaxPendingMessages(config.producer.pendingQueueSize);
+        producerConfiguration.setMessageRoutingMode(MessageRoutingMode.RoundRobinPartition);
         log.info("Set producer configuration: {}", writer.writeValueAsString(producerConfiguration));
 
         try {

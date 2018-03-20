@@ -41,7 +41,7 @@ public class PulsarBenchmarkProducer implements BenchmarkProducer {
 
     @Override
     public CompletableFuture<Void> sendAsync(String key, byte[] payload) {
-        Message msg = MessageBuilder.create().setKey(key).setContent(payload).build();
+        Message msg = MessageBuilder.create().setContent(payload).build();
         return producer.sendAsync(msg).thenApply(msgId -> null);
     }
 
