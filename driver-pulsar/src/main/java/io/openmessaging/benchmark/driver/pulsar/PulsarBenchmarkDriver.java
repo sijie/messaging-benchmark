@@ -152,8 +152,6 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
             ConsumerCallback consumerCallback) {
         ConsumerConfiguration conf = new ConsumerConfiguration();
         conf.setSubscriptionType(SubscriptionType.Failover);
-        conf.setReceiverQueueSize(10000);
-        conf.setMaxTotalReceiverQueueSizeAcrossPartitions(100000);
         conf.setMessageListener((consumer, msg) -> {
             consumerCallback.messageReceived(msg.getData(), msg.getPublishTime());
             // consumer.acknowledgeAsync(msg);
